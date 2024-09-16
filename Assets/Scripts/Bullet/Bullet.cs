@@ -29,7 +29,7 @@ public class Bullet : MonoBehaviour
         direction = dir;
     }
 
-    private void ReturnToPool()
+    public void ReturnToPool()
     {
         objectPool.ReturnObject(gameObject);
     }
