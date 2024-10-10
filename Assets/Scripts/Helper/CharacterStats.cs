@@ -16,6 +16,6 @@ public class CharacterStats : ScriptableObject
     public float MoveSpeed = 5f;
 
     [Range(0f, 50f)]
-    public float AttackPower = 10f;
+    public int AttackPower = 10;
 }
 

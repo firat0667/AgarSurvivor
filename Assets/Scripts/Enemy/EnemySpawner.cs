@@ -4,25 +4,26 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [SerializeField] private ObjectPool _enemyPool;  // Object Pool referansı
-    [SerializeField] private float _spawnInterval = 2f;  // Düşman üretme aralığı
-    [SerializeField] private Transform _spawnArea;      // Düşmanların üretileceği alan
 
-    private Vector2 _spawnAreaMin;  // Alanın minimum köşesi
-    private Vector2 _spawnAreaMax;  // Alanın maksimum köşesi
+    [SerializeField] private ObjectPool _enemyPool; 
+    [SerializeField] private float _starSpawnInterval = 5f;  
+    [SerializeField] private Transform _spawnArea;      
+
+    private Vector2 _spawnAreaMin;  
+    private Vector2 _spawnAreaMax;  
+
+
 
     private void Start()
     {
-        // Sınırları belirle
+        
         SetSpawnAreaBounds();
 
-        // Düşmanları belirli aralıklarla üret
-        InvokeRepeating(nameof(SpawnEnemy), 0f, _spawnInterval);
+        InvokeRepeating(nameof(SpawnEnemy), 0f, _starSpawnInterval/PlayerController.Instance.PlayerLevel);
     }
 
     private void SetSpawnAreaBounds()
     {
-        // SpawnArea'nın sınırlarını belirle
         Bounds bounds = _spawnArea.GetComponent<Collider2D>().bounds;
         _spawnAreaMin = bounds.min;
         _spawnAreaMax = bounds.max;
@@ -30,25 +31,20 @@ public class EnemySpawner : MonoBehaviour
 
     private void SpawnEnemy()
     {
-        // Object Pool'dan bir düşman al
         GameObject enemy = _enemyPool.GetObject();
 
-        // Eğer havuzda nesne yoksa, düşman üretimini durdur
         if (enemy == null)
         {
             CancelInvoke(nameof(SpawnEnemy));
             return;
         }
 
-        // Sınırlar içinde rastgele bir konum seç
         float randomX = Random.Range(_spawnAreaMin.x, _spawnAreaMax.x);
         float randomY = Random.Range(_spawnAreaMin.y, _spawnAreaMax.y);
         Vector2 randomPosition = new Vector2(randomX, randomY);
 
-        // Düşmanı rastgele konuma yerleştir
         enemy.transform.position = randomPosition;
 
-        // Eğer düşmanın Object Pool referansı varsa, ona ayarla
         Enemy enemyScript = enemy.GetComponent<Enemy>();
         if (enemyScript != null)
         {
