@@ -585,5 +585,5 @@ MonoBehaviour:
   _characterStats: {fileID: 11400000, guid: c125c2f70b0bc124daf3c6d6232e2af0, type: 2}
   _levelText: {fileID: 527338549939673184}
   EnemyType: 1
-  _frequency: 12
-  _amplitude: 0.85
+  Frequency: 12
+  Amplitude: 0.85

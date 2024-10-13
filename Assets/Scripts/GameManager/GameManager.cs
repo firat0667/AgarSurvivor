@@ -1,7 +1,9 @@
 ﻿using DG.Tweening;
+using JetBrains.Annotations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -15,7 +17,10 @@ public class GameManager : MonoBehaviour
     public Button ResumeButton;
     public Button RestartButton;
     private Animator _mainmenuAnim;
-
+    public TextMeshProUGUI HighScoreText;
+    public int HighScore;
+    public TextMeshProUGUI ScoreText;
+    public int Score;
     private void Awake()
     {
         if (Instance == null)
@@ -24,6 +29,7 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         _mainmenuAnim=_mainMenuCanvas.GetComponent<Animator>();
         Time.timeScale = 0;
+        GetScore();
     }
     void OnEnable()
     {
@@ -37,20 +43,40 @@ public class GameManager : MonoBehaviour
         _onGamePaused -= PauseGame;
         ResumeButton.onClick.RemoveListener(ResumeGame);
     }
+    public void Addscore()
+    {
+        Score++;
+        PlayerPrefs.SetInt("Score", Score);
+        ScoreText.text = Score.ToString();
+    }
+    public void DeadScore()
+    {
+        if (Score > HighScore)
+        {
+            HighScore = Score;
+            PlayerPrefs.SetInt("Score", HighScore);
+        }
+            
+
+    }
+   public void GetScore()
+    {
+        HighScore = PlayerPrefs.GetInt("Score");
+        HighScoreText.text = HighScore.ToString();
+    }
     void PauseGame()
     {
-        Time.timeScale = 0; // Oyunu durdur
+        Time.timeScale = 0; 
         _mainMenuCanvas.SetActive(true);
-        _mainmenuAnim.updateMode = AnimatorUpdateMode.UnscaledTime; // Animasyonları Unscaled Time ile oynat
-        _mainmenuAnim.speed = 1; // Animasyon normal hızda ileri oynasın
-        _mainmenuAnim.Play(AnimatorTag.MainMenuAnim_AnimTag); // Ana menü animasyonunu başlat
+        _mainmenuAnim.updateMode = AnimatorUpdateMode.UnscaledTime; 
+        _mainmenuAnim.speed = 1; 
+        _mainmenuAnim.Play(AnimatorTag.MainMenuAnim_AnimTag); 
     }
 
     public void ResumeGame()
     {
-        // UnscaledTime modunda animasyonu ters oynatıyoruz
-        Time.timeScale = 1; // Oyunu durdur
-        _mainmenuAnim.Play(AnimatorTag.MainMenuAnimReturn_AnimTag); // Ana menü animasyonunu başlat
+        Time.timeScale = 1;
+        _mainmenuAnim.Play(AnimatorTag.MainMenuAnimReturn_AnimTag); 
     }
 
     public void RestartGame()

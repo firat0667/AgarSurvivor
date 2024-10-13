@@ -11,8 +11,6 @@ public class PlayerController : MonoBehaviour
     public static PlayerController Instance;
     public PlayerMovement PlayerMovement => _playerMovement;
     [SerializeField] private PlayerMovement _playerMovement;
-
-    [SerializeField] private TextMeshPro _tmproText;
     [SerializeField] private CinemachineVirtualCamera _cam;
     [SerializeField] private float _cineMachine = 0.5f;
 
@@ -33,6 +31,7 @@ public class PlayerController : MonoBehaviour
     [Header("Weapons")]
 
     public Transform OrbitPos;
+    public List<Transform> Orbiters = new List<Transform>();
 
     private void Awake()
     {
@@ -43,20 +42,20 @@ public class PlayerController : MonoBehaviour
         PlayerStats.AttackPower = 1;
         AttackPower = PlayerStats.AttackPower;
     }
+    private void Start()
+    {
 
+    }
+
+  
 
     public void UpdateScaleText()
     {
         float scale = 1+ (PlayerLevel * 0.1f);
         PlayerLevel += 1;
-        PlayerStats.AttackPower += 1;
-        AttackPower = PlayerStats.AttackPower;
+        Time.timeScale = 0;
+        UpgradeManager.Instance.UpgradePanel.SetActive(true);
         transform.localScale = new Vector3(scale, scale, scale);
-        //float scale = PlayerLevel *  0.01f;
-        //transform.localScale = new Vector3(scale, scale, scale);
-        _tmproText.text = PlayerLevel.ToString();
-        //if (_cam.m_Lens.OrthographicSize > 2.5f && _cam.m_Lens.OrthographicSize < 12.5)
-        //    _cam.m_Lens.OrthographicSize -= amount * _cineMachine;
         if (PlayerLevel <= 0)
         {
             Scene currentScene = SceneManager.GetActiveScene();
@@ -75,10 +74,12 @@ public class PlayerController : MonoBehaviour
 
             if (enemy.Level <= PlayerLevel)
             {
-                ExperienceScript.Instance.EarnExp(enemy.Level*5);
+                ExperienceScript.Instance.EarnExp(enemy.Level*_playerStats.Exp);
+                ParticleManager.Instance.CreateParticle(transform, enemy.EnemyType);
             }
             else
             {
+                GameManager.Instance.DeadScore();
                 Scene currentScene = SceneManager.GetActiveScene();
                 SceneManager.LoadScene(currentScene.name);
             }
@@ -90,7 +91,7 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.tag == Tags.Bait_Tag)
         {
-            ExperienceScript.Instance.EarnExp(5);
+            ExperienceScript.Instance.EarnExp(_playerStats.Exp);
             BaitPool.ReturnObject(collision.gameObject);
         }
     }

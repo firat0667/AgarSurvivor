@@ -5,9 +5,10 @@ using UnityEngine;
 public class Orbit : Weapon
 {
     [SerializeField] private float _orbitRadius;
-    void Start()
+    private void OnEnable()
     {
-        
+        if(!PlayerController.Instance.Orbiters.Contains(transform))
+        PlayerController.Instance.Orbiters.Add(transform);
     }
 
     void Update()
@@ -17,14 +18,16 @@ public class Orbit : Weapon
     void OrbiterMovement()
     {
         Vector3 playerPos = PlayerController.Instance.transform.position;
+        float angleStep = 360f / PlayerController.Instance.Orbiters.Count; 
 
-        float angle = Time.time * WeaponState.Speed;
+        for (int i = 0; i < PlayerController.Instance.Orbiters.Count; i++)
+        {
+            float angle = (Time.time * WeaponState.Speed + angleStep * i) * Mathf.Deg2Rad; // Convert angle to radians and apply step
+            float x = Mathf.Cos(angle) * _orbitRadius; // Calculate x position
+            float y = Mathf.Sin(angle) * _orbitRadius; // Calculate y position
 
-        float x = Mathf.Cos(angle) * _orbitRadius;
-        float y = Mathf.Sin(angle) * _orbitRadius;
-
-        Vector3 orbitPos = new Vector3(x, y, 0) + playerPos;
-
-        PlayerController.Instance.OrbitPos.position = orbitPos;
+            Vector3 orbitPos = new Vector3(x, y, 0) + playerPos; // Calculate orbit position
+            PlayerController.Instance.Orbiters[i].position = orbitPos; // Set orbiter's position
+        }
     }
 }

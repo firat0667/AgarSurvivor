@@ -10,9 +10,10 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private Transform _spawnArea;      
 
     private Vector2 _spawnAreaMin;  
-    private Vector2 _spawnAreaMax;  
+    private Vector2 _spawnAreaMax;
 
-
+    public GameObject SquareEnemy;
+    public GameObject CircleEnemy;
 
     private void Start()
     {

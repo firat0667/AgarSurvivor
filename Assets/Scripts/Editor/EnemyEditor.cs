@@ -1,25 +1,30 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-
 [CustomEditor(typeof(Enemy))]
 public class EnemyEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        // Temel Inspector görünümünü çiz
-        DrawDefaultInspector();
-
-        // Hedef script'i al (Enemy)
         Enemy enemy = (Enemy)target;
 
-        // Eğer düşman tipi Square ise, dalga ayarlarını göster
+       
+        DrawDefaultInspector();
+
+      
         if (enemy.EnemyType == EnemyType.Square)
         {
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Wawe Settings", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Wave Settings", EditorStyles.boldLabel);
+
             enemy.Frequency = EditorGUILayout.FloatField("Frequency", enemy.Frequency);
             enemy.Amplitude = EditorGUILayout.FloatField("Amplitude", enemy.Amplitude);
+        }
+
+      
+        if (GUI.changed)
+        {
+            EditorUtility.SetDirty(enemy);
         }
     }
 }

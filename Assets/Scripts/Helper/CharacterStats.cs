@@ -17,5 +17,8 @@ public class CharacterStats : ScriptableObject
 
     [Range(0f, 50f)]
     public int AttackPower = 10;
+
+    [Range(0f, 50f)]
+    public int Exp = 5;
 }
 

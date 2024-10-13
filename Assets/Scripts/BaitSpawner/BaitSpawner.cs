@@ -9,7 +9,6 @@ public class BaitSpawner : MonoBehaviour
 
     public void SpawnBait(Transform transform)
     {
-        // Object Pool'dan bir düşman al
         GameObject bait = _baitPool.GetObject();
 
         bait.transform.position = transform.position;

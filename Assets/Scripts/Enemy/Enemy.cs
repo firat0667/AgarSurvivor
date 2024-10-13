@@ -1,5 +1,6 @@
-﻿using TMPro;
-using UnityEngine;
+﻿using UnityEngine;
+using TMPro;
+using System.Collections;
 
 public enum EnemyType
 {
@@ -17,19 +18,19 @@ public class Enemy : MonoBehaviour
     [SerializeField] private TextMeshPro _levelText;
 
     private float _charSpeed;
-
     private Transform _playerTransform;
     private PlayerMovement _playerMovement;
     private float _originalMoveSpeed;
     private bool _isFollowPlayer;
 
+    private bool canTakeDamage = true; // Hasar alıp alamayacağını kontrol eden boolean
+
     public EnemyType EnemyType;
 
     public int Level { get; set; }
 
-    // Bu ayarları Inspector'da koşullu göstermek için Custom Editor yazacağız
-     public float Frequency { get; set;}
-     public float Amplitude { get; set;}
+    [HideInInspector] public float Frequency = 1f;
+    [HideInInspector] public float Amplitude = 1f;
 
     private void OnEnable()
     {
@@ -39,13 +40,13 @@ public class Enemy : MonoBehaviour
         float randomSpeedMultiplier = Random.Range(1, _characterStats.MoveSpeed);
         _originalMoveSpeed = randomSpeedMultiplier;
         _charSpeed = randomSpeedMultiplier;
-
+        Level = PlayerController.Instance.PlayerLevel * Random.Range(_minScale, _maxScale);
         SetRandomScale();
     }
 
     private void Update()
     {
-        if (_playerTransform != null && _isFollowPlayer && EnemyType == EnemyType.Normal && PlayerController.Instance.PlayerLevel<Level)
+        if (_playerTransform != null && _isFollowPlayer && EnemyType == EnemyType.Normal && PlayerController.Instance.PlayerLevel < Level)
         {
             MoveTowardsPlayer();
         }
@@ -74,17 +75,13 @@ public class Enemy : MonoBehaviour
 
             float dotProduct = Vector2.Dot(playerDirection, enemyToPlayerDirection);
 
-            Debug.Log("Dot Product: " + dotProduct);
-
             if (dotProduct > 0.9f)
             {
                 _charSpeed = _originalMoveSpeed;
-                Debug.Log("Player is facing the enemy, slowing down to 1");
             }
             else
             {
                 _charSpeed = 1f;
-                Debug.Log("Player is not facing the enemy, restoring original speed: " + _originalMoveSpeed);
             }
         }
 
@@ -97,9 +94,9 @@ public class Enemy : MonoBehaviour
             return Vector3.zero;
 
         Vector3 returnVelocity = playerPos - transform.position;
-
         Vector3 parallel = Vector3.Cross(returnVelocity, Vector3.forward);
 
+        // Frequency ve Amplitude alanlarını doğrudan kullanıyoruz
         returnVelocity += parallel * Mathf.Sin(Time.time * Frequency) * Amplitude;
 
         return returnVelocity.normalized * _characterStats.MoveSpeed;
@@ -110,12 +107,27 @@ public class Enemy : MonoBehaviour
         if (collision.gameObject.tag == Tags.Weapon_Tag)
         {
             Weapon weapon = collision.gameObject.GetComponent<Weapon>();
-            TakeDamage(weapon.WeaponState.Damage);
+          
+             TakeDamage(weapon.WeaponState.Damage);
+            
+
+            // Silahın pool'a geri dönmesi durumu
             if (weapon.WeaponState == UpgradeManager.Instance.BulletState)
             {
                 weapon.GetComponent<Bullet>().ReturnToPool();
             }
+
             PlayerController.Instance.BaitSpawner.SpawnBait(transform);
+        }
+        if (collision.gameObject.tag == Tags.Enemy_Tag)
+        {
+            Enemy enemy = collision.gameObject.GetComponent<Enemy>();
+            if (PlayerController.Instance.PlayerLevel >= Level)
+            {
+                enemy.Level += Level;
+                enemy.SetRandomScale();
+                ReturnToPool();
+            }
         }
     }
 
@@ -146,18 +158,19 @@ public class Enemy : MonoBehaviour
 
     private void SetRandomScale()
     {
-        Level = PlayerController.Instance.PlayerLevel * Random.Range(_minScale, _maxScale);
         float finalScale = 1 + (Level * 0.1f);
         Vector3 newScale = new Vector3(finalScale, finalScale, finalScale);
         transform.localScale = newScale;
 
         _levelText.text = Level.ToString();
     }
+
     private void FleeFromPlayer()
     {
         Vector3 directionAwayFromPlayer = (transform.position - _playerTransform.position).normalized;
         transform.position += directionAwayFromPlayer * _charSpeed * Time.deltaTime;
     }
+
     public void TakeDamage(int DamagePower)
     {
         Level -= DamagePower;
@@ -170,6 +183,7 @@ public class Enemy : MonoBehaviour
         {
             ReturnToPool();
             ParticleManager.Instance.CreateParticle(transform, EnemyType);
+            GameManager.Instance.Addscore();
         }
     }
 }
